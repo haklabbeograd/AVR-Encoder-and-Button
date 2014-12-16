@@ -1,10 +1,10 @@
-#define F_CPU 16000000UL
+#define F_CPUT 16000000UL
 #include <avr/io.h>
 #include <util/delay.h>
 #include "usart.h"
 
 #define BAUDRATE 9600
-#define BAUD_PRESCALLER (((F_CPU / (BAUDRATE * 16UL))) - 1)
+#define BAUD_PRESCALLER (((F_CPUT / (BAUDRATE * 16UL))) - 1)
 
 void USART_init(void){
 

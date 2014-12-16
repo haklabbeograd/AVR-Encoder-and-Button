@@ -1,17 +1,23 @@
 #include <avr/io.h>
 #include "keypad.h"
+#include <util/delay.h>
 
+//#define __DEBUG__
+
+#ifdef __DEBUG__
+#include "usart.h"
+#endif // __DEBUG__
 //Strings button matrix
 char buttons[3][5][10] =
         {
-            {{0},{0},{0},"SW204","SW207"},
+            {"NA","NA","NA","SW204","SW207"},
             {"SW200","SW205","ENCBUTT","SW202","SW208"},
-            {"SW201","SW203",{0},"SW206","SW209"}
+            {"SW201","SW203","NA","SW206","SW209"}
         };
 
 //Sets columns as input, pushes them up, and sets an interrupt on them
 //Sets rows as output and sets them to drive LOW.
-void setupKeypad()
+inline void setupKeypad()
 {
     COLS_DIR = COLS_INPUT;
     COLS_PULLUP = COLS_PULLUP_SET;
@@ -23,7 +29,7 @@ void setupKeypad()
 }
 
 //Sets rows as input, pulls them high, drives columns LOW..
-void setupKeypadforRows()
+inline void setupKeypadforRows()
 {
     ROWS_DIR = ROWS_INPUT;
     ROWS_PULLUP = ROWS_PULLUP_SET;
@@ -34,9 +40,13 @@ void setupKeypadforRows()
 //retrieves the button name from the buttons string matrix
 char* getButtonName()
 {
-    int i,j;
-    char * returnStr = "\0";
+    int i=0,j=0;
+    char * returnStr = 0;
     uint8_t read = COLS_READ | ~COLS_MASK;
+#ifdef __DEBUG__
+    uint8_t debug_cols = read;
+    uint8_t debug_rows = 0;
+#endif // __DEBUG__
     i = 0;
     while((read & 1) && i<5)
     {
@@ -46,7 +56,13 @@ char* getButtonName()
     if(i < 5)
     {
         setupKeypadforRows();
+        _delay_ms(25);
         read = ROWS_READ | ~ROWS_MASK;
+
+#ifdef __DEBUG__
+        debug_rows = read;
+#endif // __DEBUG__
+
         j =0;
         while((read & 0b1)&& j<3 )
         {
@@ -54,8 +70,14 @@ char* getButtonName()
             j++;
         }
 
-        if(j<3)returnStr = buttons[j][i];
+        if(j<3)
+            returnStr = buttons[j][i];
     }
     setupKeypad();
+#ifdef __DEBUG__
+    char debug_str[50];
+    sprintf(debug_str,"COLS: 0x%X\nROWS: 0x%X\nJ: %d\nI: %d\n\n",debug_cols,debug_rows,j,i);
+    USART_putstring(debug_str);
+#endif // __DEBUG__
     return returnStr;
 }

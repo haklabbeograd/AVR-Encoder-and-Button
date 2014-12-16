@@ -4,12 +4,13 @@
 //#include <avr/iom328p.h>
 #include <avr/sleep.h>
 #include <util/delay.h>
-#include <avr/pgmspace.h>
+
 #include "keypad.h"
 #include "usart.h"
+#include "bit_magic.h"
 
 //globals
-uint8_t change = 0; /*<< flag set in columns interrupt cleared in main */
+volatile uint8_t change = 0; /*<< flag set in columns interrupt cleared in main */
 uint8_t oldPIND2 =0;
 uint8_t newPIND2 = 0;
 
@@ -26,7 +27,7 @@ int main(void)
     USART_init();       //Call the USART initialization code
     setupKeypad();      //Call the keypad initialization code
     setupEncoder();     //Call the Encoder initialization code
-    char * buttonToSend = "\0";
+    char * buttonToSend = 0;
     while(1)
     {   //Infinite loop
         sei();//enables the interrupts
@@ -40,7 +41,7 @@ int main(void)
             change = 0;
             buttonToSend = getButtonName();
         }
-        if(buttonToSend[0] != 0)
+        if(buttonToSend != 0)
         {//Button identified
             USART_putstring("Button: ");
             USART_putstring(buttonToSend);
@@ -58,15 +59,18 @@ ISR(COLS_PCINT)
     change = 1;//set flag
 }
 
+
+#define phaseA REGISTER_BIT(PIND,2)
+#define phaseB REGISTER_BIT(PIND,3)
 //Encoder interrupt routine
 //Sends "Encoder: ++\n" if encoder moved forward
 //Sends "Encoder: --\n" if encoder moved reverse
 ISR(PCINT2_vect)
 {
-    newPIND2 = PIND & _BV(PIND2);
+    newPIND2 = phaseA;
     if((oldPIND2 == 0) && (newPIND2 != 0))
     {
-        if( (PIND & _BV(PIND3) ) == 0 )
+        if( phaseB == 0 )
         {
             USART_putstring("Encoder: --\n");
         }
