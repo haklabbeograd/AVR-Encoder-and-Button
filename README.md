@@ -1,7 +1,7 @@
 AVR-Encoder-and-Button
 ======================
 
-AVR code written to read the front buttons and encoder of the [http://www.sangean.com/products/product.asp?mid=23&gal=1 SANGEAN WFR-1 Web Radio]. This is a support device for the [http://wiki.oosm.org/wiki/InternetOfSoundThings InternetOfSoundThings hklbg project]
+AVR code written to read the front buttons and encoder of the [SANGEAN WFR-1 Web Radio](http://www.sangean.com/products/product.asp?mid=23&gal=1). This is a support device for the [InternetOfSoundThings hklbg project](http://wiki.oosm.org/wiki/InternetOfSoundThings)
 
 Arduino is put to sleep between keypresses or encoder movement, so power consumption is low. Upon a key press a string "Button: [button_name]\n" is sent over serial (9600B). uppon encoder CW movement "Encoder: ++\n" is sent, and "Encoder: --\n" for CCW movement.
 
